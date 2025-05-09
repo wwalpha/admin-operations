@@ -1,0 +1,24 @@
+{
+  "name": "autostop",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "lint": "eslint . --ext .ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.17",
+    "prettier": "^3.5.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@aws-sdk/client-ec2": "^3.806.0",
+    "@aws-sdk/client-ecs": "^3.806.0",
+    "@aws-sdk/client-eks": "^3.806.0",
+    "@aws-sdk/client-rds": "^3.806.0"
+  }
+}
