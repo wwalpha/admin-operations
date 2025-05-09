@@ -1,0 +1,22 @@
+{
+  "name": "cleanup",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "debug": "ts-node src/index.ts",
+    "build": "rm -rf dist && tsc && cd dist && zip -r ./cleanup.zip .",
+    "postbuild": "aws lambda update-function-code --function-name admin-monthly-cleanup --zip-file fileb://./dist/cleanup.zip"
+  },
+  "dependencies": {
+    "@aws-sdk/client-ec2": "^3.787.0",
+    "@aws-sdk/client-iam": "^3.787.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.1",
+    "dotenv": "^16.5.0",
+    "prettier": "^3.5.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}
