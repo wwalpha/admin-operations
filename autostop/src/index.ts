@@ -20,10 +20,10 @@ const rdsClient = new RDSClient();
 const ecsClient = new ECSClient();
 
 export const handler = async () => {
-  // await stopInstance();
-  // await stopDBInstances();
+  await stopInstance();
+  await stopDBInstances();
   await stopECSCluster();
-  // await stopDBCluster();
+  await stopDBCluster();
 };
 
 const stopInstance = async () => {
@@ -216,4 +216,4 @@ const listServices = async (cluster: string, nextToken?: string): Promise<string
   return services;
 };
 
-handler();
+// handler();

@@ -177,7 +177,7 @@ const iam_user = async () => {
 
   while (response.State !== 'COMPLETE') {
     console.log('Waiting for report generation...');
-    await new Promise((res) => setTimeout(res, 3000));
+    await new Promise((res) => setTimeout(res, 10000));
   }
 
   const report = await iamClient.send(new GetCredentialReportCommand());
@@ -208,6 +208,11 @@ const iam_user = async () => {
     const diffTime = Math.abs(currentDate.getTime() - lastUsedDate.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
+    // console.log(values[headers.indexOf('user')]);
+    // if (values[headers.indexOf('user')] === 'masahiro.nakamura@dxc.com') {
+    //   console.log(values);
+    // }
+
     if (diffDays < 365) {
       return false;
     }
@@ -221,12 +226,6 @@ const iam_user = async () => {
 
     console.log(`Deleting IAM user: ${userName}`);
 
-    try {
-      // delete login profile
-      // This is needed to delete the user
-      await iamClient.send(new DeleteLoginProfileCommand({ UserName: userName }));
-    } catch (e) {}
-
     // ポリシーのデタッチ
     const policies = await iamClient.send(new ListAttachedUserPoliciesCommand({ UserName: userName }));
     for (const policy of policies.AttachedPolicies || []) {
@@ -238,7 +237,15 @@ const iam_user = async () => {
       await iamClient.send(new RemoveUserFromGroupCommand({ UserName: userName, GroupName: group.GroupName }));
     }
 
-    await iamClient.send(new DeleteUserCommand({ UserName: userName }));
+    try {
+      // delete login profile
+      // This is needed to delete the user
+      await iamClient.send(new DeleteLoginProfileCommand({ UserName: userName }));
+    } catch (e) {}
+
+    try {
+      await iamClient.send(new DeleteUserCommand({ UserName: userName }));
+    } catch (e) {}
   });
 
   await Promise.all(tasks);

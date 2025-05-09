@@ -1,9 +1,14 @@
 {
   "compilerOptions": {
-    "target": "es2016",
+    "target": "ESNext",
+    "lib": [
+      "ESNext",
+      "DOM"
+    ],
     "module": "commonjs",
     "rootDir": "./",
     "baseUrl": "./",
+    "outDir": "./dist",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
