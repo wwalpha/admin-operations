@@ -16,6 +16,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@aws-sdk/client-auto-scaling": "^3.812.0",
     "@aws-sdk/client-ec2": "^3.806.0",
     "@aws-sdk/client-ecs": "^3.806.0",
     "@aws-sdk/client-eks": "^3.806.0",

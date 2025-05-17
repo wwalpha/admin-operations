@@ -1,3 +1,8 @@
+import {
+  AutoScalingClient,
+  DescribeAutoScalingGroupsCommand,
+  UpdateAutoScalingGroupCommand,
+} from '@aws-sdk/client-auto-scaling';
 import { DescribeInstancesCommand, EC2Client, Instance, StopInstancesCommand } from '@aws-sdk/client-ec2';
 import {
   ECSClient,
@@ -18,12 +23,14 @@ import {
 const ec2Client = new EC2Client();
 const rdsClient = new RDSClient();
 const ecsClient = new ECSClient();
+const autoScalingClient = new AutoScalingClient({});
 
 export const handler = async () => {
+  await stopAutoScalingGroups();
   await stopInstance();
+  await stopDBCluster();
   await stopDBInstances();
   await stopECSCluster();
-  await stopDBCluster();
 };
 
 const stopInstance = async () => {
@@ -45,13 +52,23 @@ const stopDBInstances = async () => {
   if (results.length === 0) return;
 
   // stop instances
-  const tasks = results.map((item) =>
-    rdsClient.send(
-      new StopDBInstanceCommand({
-        DBInstanceIdentifier: item,
-      })
-    )
-  );
+  const tasks = results.map(async (item) => {
+    try {
+      await rdsClient.send(
+        new StopDBInstanceCommand({
+          DBInstanceIdentifier: item,
+        })
+      );
+    } catch (e) {
+      const err = e as any;
+
+      if (err.Code === 'InvalidParameterCombination') {
+        return;
+      }
+
+      throw e;
+    }
+  });
 
   await Promise.all(tasks);
 };
@@ -156,7 +173,9 @@ const describeDBInstances = async (nextToken?: string): Promise<string[]> => {
   if (!instances) return rets;
 
   // get instance list
-  rets = instances.map((item) => item.DBInstanceIdentifier as string);
+  rets = instances
+    .filter((item) => item.DBInstanceStatus === 'available')
+    .map((item) => item.DBInstanceIdentifier as string);
 
   // has next token
   if (results.Marker) {
@@ -214,6 +233,24 @@ const listServices = async (cluster: string, nextToken?: string): Promise<string
   }
 
   return services;
+};
+
+const stopAutoScalingGroups = async () => {
+  // Get all Auto Scaling Groups
+  const { AutoScalingGroups } = await autoScalingClient.send(new DescribeAutoScalingGroupsCommand({}));
+  if (!AutoScalingGroups) return;
+
+  // Set DesiredCapacity to 0 for each group
+  const tasks = AutoScalingGroups.map((group) =>
+    autoScalingClient.send(
+      new UpdateAutoScalingGroupCommand({
+        AutoScalingGroupName: group.AutoScalingGroupName,
+        DesiredCapacity: 0,
+      })
+    )
+  );
+
+  await Promise.all(tasks);
 };
 
 // handler();
