@@ -4,10 +4,11 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist && tsc && cd dist && zip -r ./autostop.zip .",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
-    "lint": "eslint . --ext .ts"
+    "lint": "eslint . --ext .ts",
+    "postbuild": "aws lambda update-function-code --function-name onecloud-auto-stop-ontime --zip-file fileb://./dist/autostop.zip"
   },
   "devDependencies": {
     "@types/node": "^22.15.17",
